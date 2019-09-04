@@ -64,7 +64,7 @@ class EdgePrediction(GraphBase):
         #non_edges = [non_edges[inx] for inx in perm]
         np.random.shuffle(non_edges)
         #chosen_non_edge_inx = np.random.choice(len(non_edges), size=test_set_size*2, replace=False)
-g
+
         #train_neg_samples = [non_edges[perm[p]] for p in chosen_non_edge_inx[:test_set_size]]
         #test_neg_samples = [non_edges[perm[p]] for p in chosen_non_edge_inx[test_set_size:]]
         train_neg_samples = non_edges[:test_set_size]
