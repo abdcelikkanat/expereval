@@ -1,6 +1,6 @@
 ### Experimental Evaluations
 
-Example runs for performin experiments
+Example runs for performing experiments
 
 
 **Classification**

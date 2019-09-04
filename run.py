@@ -1,7 +1,7 @@
 import os, sys
 from classification.multi_label import NodeClassification
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawTextHelpFormatter
-from edge_prediction.edge_prediction import *
+from link_prediction.link_prediction import *
 
 def parse_arguments():
     parser = ArgumentParser(description="Examples: \n For classification \n  " +
@@ -27,17 +27,17 @@ def parse_arguments():
                                        choices=['small', 'large', 'all'],
                                        help='the ratios of the training set')
     classification_parser.add_argument('--output_file', type=str, required=False,
-                                       help='the path of the output file')
+                                       help='The path of the output file')
     classification_parser.add_argument('--file_format', type=str, default="txt", required=False,
-                                       help='output file format', choices=["txt", "npy"])
+                                       help='Output file format', choices=["txt", "npy"])
     classification_parser.add_argument('--num_of_shuffles', type=int, default=10, required=False,
-                                       help='the number of shuffles')
+                                       help='The number of shuffles')
     classification_parser.add_argument('--shuffle_std', type=lambda x: (str(x).lower() in ['true','1', 'yes']),
                                        default=False, required=False, help='Compute the standart deviation of shuffles')
     classification_parser.add_argument('--directed', type=lambda x: (str(x).lower() in ['true','1', 'yes']),
-                                       default=False, required=False, help='the given graph is directed or undirected')
+                                       default=False, required=False, help='The given graph is directed or undirected')
     classification_parser.add_argument('--detailed', type=lambda x: (str(x).lower() in ['true','1', 'yes']),
-                                       default=False, required=False, help='indicates the format of the output')
+                                       default=False, required=False, help='Indicates the format of the output')
 
     edge_parser = subparsers.add_parser('edge_prediction')
 
