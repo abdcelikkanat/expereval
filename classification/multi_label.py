@@ -7,6 +7,10 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.sparse import csr_matrix
+from sklearn.svm import SVC
+from scipy.spatial.distance import squareform
+from scipy.spatial.distance import pdist
+from scipy.spatial.distance import cdist
 
 
 class NodeClassification(Evaluation):
@@ -16,7 +20,7 @@ class NodeClassification(Evaluation):
 
     _score_types = ['micro', 'macro']
 
-    def __init__(self, embedding_file, graph_path, params={}):
+    def __init__(self, embedding_file, graph_path, params={}, classification_method=None):
         Evaluation.__init__(self)
 
         self._embedding_file = embedding_file
@@ -24,6 +28,8 @@ class NodeClassification(Evaluation):
         self._directed = params['directed'] if 'directed' in params else False
 
         self.results = None
+
+        self.classification_method = classification_method
 
     def evaluate(self, number_of_shuffles, training_ratios):
         g = self._get_networkx_graph(self._graph_path, directed=self._directed, params={})
@@ -60,8 +66,19 @@ class NodeClassification(Evaluation):
                 test_features = shuffled_features[train_size:, :]
                 test_labels = shuffled_labels[train_size:]
 
+                print(train_features)
+
                 # Train the classifier
-                ovr = OneVsRestClassifier(LogisticRegression(solver='liblinear'))
+                if self.classification_method == "logistic":
+                    ovr = OneVsRestClassifier(LogisticRegression(solver='liblinear'))
+                if self.classification_method == "svm":
+                    ovr = OneVsRestClassifier(SVC(kernel="precomputed", cache_size=4096, probability=True))
+                    _train_features = train_features.copy()
+                    train_features = squareform(1 - pdist(_train_features, 'hamming'))
+                    test_features = 1 - cdist(test_features, _train_features, 'hamming')
+                else:
+                    raise ValueError("Invalid classification method name: {}".format(self.classification_method))
+
 
                 ovr.fit(train_features, train_labels)
 

@@ -20,7 +20,11 @@ class Evaluation:
             # Read embeddings
             for line in f.readlines():
                 tokens = line.strip().split()
-                node2embedding[tokens[0]] = [float(value) for value in tokens[1:]]
+                if self.classification_method == "svm":
+                    node2embedding[tokens[0]] = [long(value) for value in tokens[1:]]
+                    print(node2embedding[tokens[0]])
+                else:
+                    node2embedding[tokens[0]] = [float(value) for value in tokens[1:]]
 
         return node2embedding
 
