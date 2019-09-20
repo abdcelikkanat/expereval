@@ -66,16 +66,21 @@ class NodeClassification(Evaluation):
                 test_features = shuffled_features[train_size:, :]
                 test_labels = shuffled_labels[train_size:]
 
-                print(train_features)
 
                 # Train the classifier
                 if self.classification_method == "logistic":
                     ovr = OneVsRestClassifier(LogisticRegression(solver='liblinear'))
-                if self.classification_method == "svm":
+                elif self.classification_method == "svm-precomputed":
+                    ovr = OneVsRestClassifier(SVC(kernel="rbf", cache_size=4096, probability=True))
+
+                elif self.classification_method == "svm-hamming":
                     ovr = OneVsRestClassifier(SVC(kernel="precomputed", cache_size=4096, probability=True))
                     _train_features = train_features.copy()
-                    train_features = squareform(1 - pdist(_train_features, 'hamming'))
-                    test_features = 1 - cdist(test_features, _train_features, 'hamming')
+                    _test_features = test_features.copy()
+
+                    train_features = cdist(_train_features, _train_features, 'hamming')
+                    test_features = cdist(_test_features, _train_features, 'hamming')
+
                 else:
                     raise ValueError("Invalid classification method name: {}".format(self.classification_method))
 
