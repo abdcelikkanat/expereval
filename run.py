@@ -38,6 +38,8 @@ def parse_arguments():
                                        default=False, required=False, help='The given graph is directed or undirected')
     classification_parser.add_argument('--detailed', type=lambda x: (str(x).lower() in ['true','1', 'yes']),
                                        default=False, required=False, help='Indicates the format of the output')
+    classification_parser.add_argument('--classification_method', type=str, required=False, default="logistic",
+                                       help='Path of the graph, .gml or .mat files')
 
     edge_parser = subparsers.add_parser('edge_prediction')
 
@@ -80,7 +82,7 @@ def process(args):
 
         params['directed'] = args.directed
 
-        nc = NodeClassification(embedding_file=args.emb, graph_path=args.graph, params=params)
+        nc = NodeClassification(embedding_file=args.emb, graph_path=args.graph, params=params, classification_method=args.classification_method)
         nc.evaluate(number_of_shuffles=args.num_of_shuffles, training_ratios=training_ratios)
 
         if args.output_file is None:
