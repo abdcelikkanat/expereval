@@ -112,10 +112,10 @@ class NodeClassification(Evaluation):
         self.results = results
 
     def get_output_text(self, shuffle_std=False, detailed=False):
-
-        num_of_shuffles = len(self.results.values()[0].values()[0])
-        train_ratios = [r for r in self.results.values()[0]]
-        percentage_title = " ".join("{0:.0f}%".format(100*r) for r in self.results.values()[0])
+      
+        num_of_shuffles = len(list(list(self.results.values())[0].values())[0])
+        train_ratios = [r for r in list(self.results.values())[0]]
+        percentage_title = " ".join("{0:.0f}%".format(100*r) for r in list(self.results.values())[0])
 
         output = ""
         for score_type in self._score_types:
