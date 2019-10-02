@@ -86,8 +86,8 @@ class NodeClassification(Evaluation):
                     _train_features = train_features.copy()
                     _test_features = test_features.copy()
 
-                    train_features = cdist(_train_features, _train_features, 'cosine')
-                    test_features = cdist(_test_features, _train_features, 'cosine')
+                    train_features = 1.0 - cdist(_train_features, _train_features, 'cosine')
+                    test_features = 1.0 - cdist(_test_features, _train_features, 'cosine')
 
                 else:
                     raise ValueError("Invalid classification method name: {}".format(self.classification_method))
