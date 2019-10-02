@@ -70,7 +70,7 @@ class NodeClassification(Evaluation):
                 # Train the classifier
                 if self.classification_method == "logistic":
                     ovr = OneVsRestClassifier(LogisticRegression(solver='liblinear'))
-                elif self.classification_method == "svm-precomputed":
+                elif self.classification_method == "svm-rbf":
                     ovr = OneVsRestClassifier(SVC(kernel="rbf", cache_size=4096, probability=True))
 
                 elif self.classification_method == "svm-hamming":
@@ -78,8 +78,16 @@ class NodeClassification(Evaluation):
                     _train_features = train_features.copy()
                     _test_features = test_features.copy()
 
-                    train_features = cdist(_train_features, _train_features, 'hamming')
-                    test_features = cdist(_test_features, _train_features, 'hamming')
+                    train_features = 1.0 - cdist(_train_features, _train_features, 'hamming')
+                    test_features = 1.0 - cdist(_test_features, _train_features, 'hamming')
+
+                elif self.classification_method == "svm-cosine":
+                    ovr = OneVsRestClassifier(SVC(kernel="precomputed", cache_size=4096, probability=True))
+                    _train_features = train_features.copy()
+                    _test_features = test_features.copy()
+
+                    train_features = cdist(_train_features, _train_features, 'cosine')
+                    test_features = cdist(_test_features, _train_features, 'cosine')
 
                 else:
                     raise ValueError("Invalid classification method name: {}".format(self.classification_method))
