@@ -81,6 +81,14 @@ class NodeClassification(Evaluation):
                     train_features = 1.0 - cdist(_train_features, _train_features, 'hamming')
                     test_features = 1.0 - cdist(_test_features, _train_features, 'hamming')
 
+                elif self.classification_method == "svm-hamming-noone":
+                    ovr = OneVsRestClassifier(SVC(kernel="precomputed", cache_size=4096, probability=True))
+                    _train_features = train_features.copy()
+                    _test_features = test_features.copy()
+
+                    train_features = cdist(_train_features, _train_features, 'hamming')
+                    test_features = cdist(_test_features, _train_features, 'hamming')
+
                 elif self.classification_method == "svm-cosine":
                     ovr = OneVsRestClassifier(SVC(kernel="precomputed", cache_size=4096, probability=True))
                     _train_features = train_features.copy()
