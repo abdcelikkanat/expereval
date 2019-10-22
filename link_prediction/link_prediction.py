@@ -11,9 +11,9 @@ from sklearn import preprocessing
 import pickle
 
 from graphbase.graphbase import *
+from scipy.spatial import distance
 
-
-_operators = ["hadamard", "average", "l1", "l2"]
+_operators = ["hadamard", "average", "l1", "l2", "hamming", "cosine"]
 
 
 class EdgePrediction(GraphBase):
@@ -90,6 +90,10 @@ class EdgePrediction(GraphBase):
                 value = abs(vec1 - vec2)
             if binary_operator == "l2":
                 value = abs(vec1 - vec2)**2
+            if binary_operator == "hamming":
+                value = 1.0 - distance.hamming(vec1[i], vec2[i])
+            if binary_operator == "cosine":
+                value = distance.cosine(vec1[i], vec2[2])
 
             features.append(value)
 
