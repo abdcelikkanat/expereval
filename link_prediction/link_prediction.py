@@ -97,7 +97,13 @@ class EdgePrediction(GraphBase):
 
             features.append(value)
 
-        return np.asarray(features)
+
+        features = np.asarray(features)
+        # Reshape the feature vector if it is 1d vector
+        if binary_operator is in ["hamming", "cosine"]:
+            features.reshape(-1, 1)
+
+        return features
 
     def split_network(self, test_set_ratio, target_folder):
 
