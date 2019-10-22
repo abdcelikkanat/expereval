@@ -101,7 +101,7 @@ class EdgePrediction(GraphBase):
         features = np.asarray(features)
         # Reshape the feature vector if it is 1d vector
         if binary_operator in ["hamming", "cosine"]:
-            features.reshape(-1, 1)
+            features = features.reshape(-1, 1)
 
         return features
 
