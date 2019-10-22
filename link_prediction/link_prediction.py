@@ -91,9 +91,9 @@ class EdgePrediction(GraphBase):
             if binary_operator == "l2":
                 value = abs(vec1 - vec2)**2
             if binary_operator == "hamming":
-                value = 1.0 - distance.hamming(vec1[i], vec2[i])
+                value = 1.0 - distance.hamming(vec1, vec2)
             if binary_operator == "cosine":
-                value = distance.cosine(vec1[i], vec2[2])
+                value = distance.cosine(vec1, vec2)
 
             features.append(value)
 
