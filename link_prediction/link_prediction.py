@@ -13,7 +13,7 @@ import pickle
 from graphbase.graphbase import *
 from scipy.spatial import distance
 
-_operators = ["hadamard", "average", "l1", "l2", "hamming", "cosine"]
+_operators = ["hadamard", "average", "l1", "l2"]
 
 
 class LinkPrediction(GraphBase):
