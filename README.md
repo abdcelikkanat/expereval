@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 python run.py classification --graph graph_path.gml --emb file.embedding --output_file output_path.txt
 ```
-#### Edge prediction
+#### Link prediction
 
 **1.** Firstly, prepare the training and test sets.
 ```
