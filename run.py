@@ -8,11 +8,13 @@ def parse_arguments():
                                         "\tpython run.py classification --graph graph_path.gml " +
                                         "--emb file.embedding --output_file output_path.txt \n" +
                                         "For edge prediction,\n Firstly, prepare the training and test sets.\n" +
-                                        "\t python run.py edge_prediction split --graph graph_path.gml " +
+                                        "\t python run.py link_prediction split --graph graph_path.gml " +
                                         "--test_set_ratio 0.5 --split_folder folder_path\n" +
                                         "Compute the scores\n" +
-                                        "\t python run.py edge_prediction predict --emb file.embedding " +
-                                        "--sample_file samples_path.pkl --output_file output.pkl",
+                                        "\t python run.py link_prediction predict --emb file.embedding " +
+                                        "--sample_file samples_path.pkl --output_file scores.pkl" +
+                                        "\t Finally, read the scores:\n" +
+                                        "\t Example: python run.py link_prediction read scores.pkl\n",
                             formatter_class=RawTextHelpFormatter)
 
     subparsers = parser.add_subparsers(help='the name of the evaluation method',
@@ -41,26 +43,32 @@ def parse_arguments():
     classification_parser.add_argument('--classification_method', type=str, required=False, default="logistic",
                                        help='Path of the graph, .gml or .mat files')
 
-    edge_parser = subparsers.add_parser('edge_prediction')
+    link_parser = subparsers.add_parser('link_prediction')
 
-    edge_subparsers = edge_parser.add_subparsers(help='the name of the evaluation method',
-                                                 dest="edge_option")
+    link_subparsers = link_parser.add_subparsers(help='the name of the evaluation method',
+                                                 dest="link_option")
 
-    edge_split_parser = edge_subparsers.add_parser('split')
-    edge_split_parser.add_argument('--graph', type=str, required=True,
+    link_split_parser = link_subparsers.add_parser('split')
+    link_split_parser.add_argument('--graph', type=str, required=True,
                                    help='Path of the graph, in .gml format')
-    edge_split_parser.add_argument('--test_set_ratio', type=float, default=0.5, required=True,
+    link_split_parser.add_argument('--test_set_ratio', type=float, default=0.5, required=True,
                                    help='Testing set ratio between 0 and 1')
-    edge_split_parser.add_argument('--split_folder', type=str, default=None, required=False,
+    link_split_parser.add_argument('--split_folder', type=str, default=None, required=False,
                                    help='folder path for the residual and pickle files')
 
-    edge_predict_parser = edge_subparsers.add_parser('predict')
-    edge_predict_parser.add_argument('--emb', type=str, required=True,
+    link_predict_parser = link_subparsers.add_parser('predict')
+    link_predict_parser.add_argument('--emb', type=str, required=True,
                                      help='Embedding file path')
-    edge_predict_parser.add_argument('--sample_file', type=str, required=True,
+    link_predict_parser.add_argument('--sample_file', type=str, required=True,
                                      help='pickle samples file path')
-    edge_predict_parser.add_argument('--output_file', type=str, default=None, required=False,
+    link_predict_parser.add_argument('--output_file', type=str, default=None, required=False,
                                      help='output pickle file path')
+
+    link_predict_parser = link_subparsers.add_parser('read')
+    link_predict_parser.add_argument('--input_file', type=str, required=True,
+                                     help='The input file in pickle file format')
+    link_predict_parser.add_argument('--set', type=str, default='testing', required=False, choices=['training', 'testing'],
+                                     help='Show the scores for testing or training set.')
 
     return parser.parse_args()
 
@@ -91,11 +99,11 @@ def process(args):
             nc.save_results(output_file=args.output_file, shuffle_std=args.shuffle_std,
                             detailed=args.detailed, file_format=args.file_format)
 
-    elif args.method == "edge_prediction":
+    elif args.method == "link_prediction":
 
-        ep = EdgePrediction()
+        lp = LinkPrediction()
 
-        if args.edge_option == "split":
+        if args.link_option == "split":
 
             test_set_ratio = args.test_set_ratio
             graph_path = args.graph
@@ -103,20 +111,20 @@ def process(args):
             if not os.path.exists(target_folder):
                 os.makedirs(target_folder)
 
-            ep.read_graph(graph_path=graph_path)
+            lp.read_graph(graph_path=graph_path)
             print("The network has been read!")
-            ep.split_network(test_set_ratio=test_set_ratio, target_folder=target_folder)
+            lp.split_network(test_set_ratio=test_set_ratio, target_folder=target_folder)
             print("The network has been partitioned!")
 
-        elif args.edge_option == 'predict':
+        elif args.link_option == 'predict':
 
             samples_file_path = args.sample_file
             embedding_file = args.emb
             #graph_path = args.graph
 
             #ep.read_graph(graph_path=graph_path)
-            train_samples, train_labels, test_samples, test_labels = ep.read_samples(samples_file_path)
-            scores = ep.predict(embedding_file_path=embedding_file,
+            train_samples, train_labels, test_samples, test_labels = lp.read_samples(samples_file_path)
+            scores = lp.predict(embedding_file_path=embedding_file,
                                 train_samples=train_samples, train_labels=train_labels,
                                 test_samples=test_samples, test_labels=test_labels)
 
@@ -125,6 +133,16 @@ def process(args):
                     pickle.dump(scores, fp)
             else:
                 print(scores)
+
+        elif args.link_option == 'read':
+
+            input_file_path = args.input_file
+            pf = pickle.load(open(input_file_path, 'rb'))
+
+            total_scores = pf #pf[0]
+
+            for metric in total_scores:
+                print("{}: {}".format(metric, total_scores[metric][args.set][0]))
 
 
 if __name__ == "__main__":
