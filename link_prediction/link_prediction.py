@@ -10,6 +10,7 @@ from sklearn.utils import shuffle
 from sklearn import preprocessing
 import pickle
 import progressbar
+import igraph
 
 from graphbase.graphbase import *
 from scipy.spatial import distance
@@ -29,31 +30,36 @@ class LinkPrediction(GraphBase):
 
         # Generate the positive test edges
         test_pos_samples = []
-        residual_g = self.g.copy()
-        num_of_ccs = nx.number_connected_components(residual_g)
-        if num_of_ccs != 1:
+        print("Networkx to igraph..")
+        residual_g = igraph.Graph.from_networkx(self.g) #self.g.copy()
+        print("Completed!")
+        if residual_g.is_connected() is False:
             raise ValueError("The graph contains more than one connected component!")
+        print("Graph is connected!")
 
         num_of_pos_test_samples = 0
 
-        edges = list(residual_g.edges())
+        print("Getting the edges...")
+        edges = residual_g.get_edgelist() #list(residual_g.edges())
         perm = np.arange(len(edges))
         np.random.shuffle(perm)
         edges = [edges[inx] for inx in perm]
+        print("Ok!")
 
+        print("Edge sampling")
         bar = progressbar.ProgressBar(maxval=test_set_size, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
         bar.start()
         for i in range(len(edges)):
             bar.update(i+1)
             # Remove the chosen edge
             chosen_edge = edges[i]
-            residual_g.remove_edge(chosen_edge[0], chosen_edge[1])
+            residual_g.delete_edges(chosen_edge) #residual_g.remove_edge(chosen_edge[0], chosen_edge[1])
 
-            if chosen_edge[1] in nx.connected._plain_bfs(residual_g, chosen_edge[0]):
+            if residual_g.are_connected(chosen_edge[1], chosen_edge[0]): #if chosen_edge[1] in nx.connected._plain_bfs(residual_g, chosen_edge[0]):
                 num_of_pos_test_samples += 1
                 test_pos_samples.append(chosen_edge)
             else:
-                residual_g.add_edge(chosen_edge[0], chosen_edge[1])
+                residual_g.add_edge(chosen_edge[0], chosen_edge[1]) #residual_g.add_edge(chosen_edge[0], chosen_edge[1])
 
             if num_of_pos_test_samples == test_set_size:
                 break
@@ -62,6 +68,7 @@ class LinkPrediction(GraphBase):
             raise ValueError("Enough positive edge samples could not be found!")
 
         # Generate the negative samples
+        print("Non edges")
         non_edges = list(nx.non_edges(self.g))
         #perm = np.arange(len(non_edges))
         #np.random.shuffle(perm)
@@ -74,7 +81,9 @@ class LinkPrediction(GraphBase):
         train_neg_samples = non_edges[:test_set_size]
         test_neg_samples = non_edges[test_set_size:test_set_size*2]
 
-        train_pos_samples = list(residual_g.edges())
+        train_pos_samples = residual_g.get_edgelist() #list(residual_g.edges())
+        residual_g = igraph.Graph.to_networkx()
+        residual_g = nx.relabel_nodes(residual_g, mapping={node: str(node) for node in residual_g.nodes()})
         return residual_g, train_pos_samples, train_neg_samples, test_pos_samples, test_neg_samples
 
     def extract_feature_vectors_from_embeddings(self, edges, embeddings, binary_operator):
