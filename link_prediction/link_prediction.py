@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 from sklearn import preprocessing
 import pickle
+import progressbar
 
 from graphbase.graphbase import *
 from scipy.spatial import distance
@@ -40,7 +41,10 @@ class LinkPrediction(GraphBase):
         np.random.shuffle(perm)
         edges = [edges[inx] for inx in perm]
 
+        bar = progressbar.ProgressBar(maxval=test_set_size, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+        bar.start()
         for i in range(len(edges)):
+            bar.update(i+1)
             # Remove the chosen edge
             chosen_edge = edges[i]
             residual_g.remove_edge(chosen_edge[0], chosen_edge[1])
