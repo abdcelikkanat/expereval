@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 from sklearn import preprocessing
 import pickle
-import progressbar
+from progressbar import *
 import igraph
 
 from graphbase.graphbase import *
