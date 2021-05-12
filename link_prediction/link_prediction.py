@@ -49,15 +49,17 @@ class LinkPrediction(GraphBase):
         print("Edge sampling")
         bar = progressbar.ProgressBar(maxval=test_set_size, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
         bar.start()
+        print(len(residual_g.get_edgelist()), self.g.number_of_edges())
         for i in range(len(edges)):
-            bar.update(i+1)
+
             # Remove the chosen edge
             chosen_edge = edges[i]
             residual_g.delete_edges(chosen_edge) #residual_g.remove_edge(chosen_edge[0], chosen_edge[1])
 
-            if residual_g.are_connected(chosen_edge[1], chosen_edge[0]): #if chosen_edge[1] in nx.connected._plain_bfs(residual_g, chosen_edge[0]):
+            if residual_g.vertex_connectivity(chosen_edge[1], chosen_edge[0]): #if chosen_edge[1] in nx.connected._plain_bfs(residual_g, chosen_edge[0]):
                 num_of_pos_test_samples += 1
                 test_pos_samples.append(chosen_edge)
+                bar.update(num_of_pos_test_samples)
             else:
                 residual_g.add_edge(chosen_edge[0], chosen_edge[1]) #residual_g.add_edge(chosen_edge[0], chosen_edge[1])
 
@@ -82,7 +84,7 @@ class LinkPrediction(GraphBase):
         test_neg_samples = non_edges[test_set_size:test_set_size*2]
 
         train_pos_samples = residual_g.get_edgelist() #list(residual_g.edges())
-        residual_g = igraph.Graph.to_networkx()
+        residual_g = igraph.Graph.to_networkx(residual_g)
         residual_g = nx.relabel_nodes(residual_g, mapping={node: str(node) for node in residual_g.nodes()})
         return residual_g, train_pos_samples, train_neg_samples, test_pos_samples, test_neg_samples
 
