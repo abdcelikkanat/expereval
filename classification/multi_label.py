@@ -11,6 +11,7 @@ from sklearn.svm import SVC
 from scipy.spatial.distance import squareform
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import cdist
+from sklearn.neighbors import KNeighborsClassifier
 
 
 class NodeClassification(Evaluation):
@@ -73,7 +74,14 @@ class NodeClassification(Evaluation):
 
                 # Train the classifier
                 if self.classification_method == "logistic":
+
                     ovr = OneVsRestClassifier(LogisticRegression(solver='liblinear'))
+
+                elif self.classification_method[:3] == "kNN" or "knn":
+
+                    n_neighbors = int(self.classification_method[3:])
+                    ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors))
+
                 elif self.classification_method == "svm-rbf":
                     ovr = OneVsRestClassifier(SVC(kernel="rbf", cache_size=4096, probability=True))
 
@@ -103,7 +111,6 @@ class NodeClassification(Evaluation):
 
                 else:
                     raise ValueError("Invalid classification method name: {}".format(self.classification_method))
-
 
                 ovr.fit(train_features, train_labels)
 
