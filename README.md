@@ -31,9 +31,5 @@ python run.py link_prediction split --graph graph_path.gml --test_set_ratio 0.5 
 
 **3.** Then, compute the scores
 ```
-python run.py link_prediction predict --emb file.embedding --sample_file samples_path.pkl --output_file scores_file.pkl
-```
-**4.** Show the scores.
-```
-python run.py link_prediction read --input_file scores_file.pkl
+python run.py link_prediction predict --emb file.embedding --sample_file samples_path.pkl --output_file scores_file.txt
 ```
