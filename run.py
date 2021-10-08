@@ -42,6 +42,8 @@ def parse_arguments():
                                        default=False, required=False, help='Indicates the format of the output')
     classification_parser.add_argument('--classification_method', type=str, required=False, default="logistic",
                                        help='Path of the graph, .gml or .mat files')
+    classification_parser.add_argument('--filetype', type=str, required=False, default="txt",
+                                       help='Embedding file type')
 
     link_parser = subparsers.add_parser('link_prediction')
 
@@ -90,7 +92,7 @@ def process(args):
 
         params['directed'] = args.directed
 
-        nc = NodeClassification(embedding_file=args.emb, graph_path=args.graph, params=params, classification_method=args.classification_method)
+        nc = NodeClassification(embedding_file=args.emb, graph_path=args.graph, params=params, classification_method=args.classification_method, filetype=args.filetype)
         nc.evaluate(number_of_shuffles=args.num_of_shuffles, training_ratios=training_ratios)
 
         if args.output_file is None:
@@ -129,8 +131,11 @@ def process(args):
                                 test_samples=test_samples, test_labels=test_labels)
 
             if args.output_file is not None:
-                with open(args.output_file, "wb") as fp:
-                    pickle.dump(scores, fp)
+                #with open(args.output_file, "wb") as fp:
+                #    pickle.dump(scores, fp)
+                with open(args.output_file, "w") as fp:
+                    for op in ["hadamard", "average", "l1", "l2"]:    
+                        fp.write("{} {}\n".format(op, scores[op]['test'][0]))
             else:
                 print(scores)
 

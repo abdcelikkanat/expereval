@@ -128,16 +128,16 @@ class LinkPrediction(GraphBase):
         # Save positive and negative samples for training and test sets
         save_file_path = os.path.join(target_folder, self.get_graph_name() + "_samples.pkl")
         with open(save_file_path, 'wb') as f:
-            pickle.dump({'training': {'edges':train_samples, 'labels': train_labels },
-                         'testing': {'edges':test_samples, 'labels': test_labels}}, f, pickle.HIGHEST_PROTOCOL)
+            pickle.dump({'train': {'edges':train_samples, 'labels': train_labels },
+                         'test': {'edges':test_samples, 'labels': test_labels}}, f, pickle.HIGHEST_PROTOCOL)
 
     def read_samples(self, file_path):
 
         with open(file_path, 'rb') as f:
             temp = pickle.load(f)
             #residual_g = temp['residual_g']
-            train_samples, train_labels = temp['training']['edges'], temp['training']['labels']
-            test_samples, test_labels = temp['testing']['edges'], temp['testing']['labels']
+            train_samples, train_labels = temp['train']['edges'], temp['train']['labels']
+            test_samples, test_labels = temp['test']['edges'], temp['test']['labels']
 
             return train_samples, train_labels, test_samples, test_labels
 
@@ -152,7 +152,7 @@ class LinkPrediction(GraphBase):
                 tokens = line.strip().split()
                 embeddings[tokens[0]] = [float(v) for v in tokens[1:]]
 
-        scores = {op: {'training': [], 'testing': []} for op in _operators}
+        scores = {op: {'train': [], 'test': []} for op in _operators}
 
         for op in _operators:
 
@@ -173,7 +173,7 @@ class LinkPrediction(GraphBase):
             train_roc = roc_auc_score(y_true=train_labels, y_score=train_preds)
             test_roc = roc_auc_score(y_true=test_labels, y_score=test_preds)
 
-            scores[op]['training'].append(train_roc)
-            scores[op]['testing'].append(test_roc)
+            scores[op]['train'].append(train_roc)
+            scores[op]['test'].append(test_roc)
 
         return scores

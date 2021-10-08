@@ -9,22 +9,49 @@ class Evaluation:
     def __init__(self):
         pass
 
-    def read_embedding_file(self, embedding_file_path):
+    def read_embedding_file(self, embedding_file_path, filetype="txt"):
         # Read the the embeddings
 
         node2embedding = {}
 
-        with open(embedding_file_path, 'r') as f:
-            # Read the first line
-            N, dim = (int(v) for v in f.readline().strip().split())
-            # Read embeddings
-            for line in f.readlines():
-                tokens = line.strip().split()
-                if self.classification_method == "svm":
-                    node2embedding[tokens[0]] = [int(value) for value in tokens[1:]]
-                    print(node2embedding[tokens[0]])
-                else:
-                    node2embedding[tokens[0]] = [float(value) for value in tokens[1:]]
+        if filetype == "txt":
+
+            with open(embedding_file_path, 'r') as f:
+                # Read the first line
+                N, dim = (int(v) for v in f.readline().strip().split())
+                # Read embeddings
+                for line in f.readlines():
+                    tokens = line.strip().split()
+                    if self.classification_method == "svm": # for nodesketch
+                        node2embedding[tokens[0]] = [int(value) for value in tokens[1:]]
+                        print(node2embedding[tokens[0]])
+                    else:
+                        node2embedding[tokens[0]] = [float(value) for value in tokens[1:]]
+
+        elif filetype == "binary":
+
+            def _int2boolean(num):
+                binary_repr = []
+                for _ in range(8):
+                    binary_repr.append(True if num % 2 else False )
+                    num = num >> 1
+                return binary_repr[::-1]
+           
+            with open(embedding_file_path, 'rb') as f:
+
+                _num_of_nodes = int.from_bytes(f.read(4), byteorder='little')
+                _dim = int.from_bytes(f.read(4), byteorder='little')
+
+                dimInBytes = int(_dim / 8)
+
+                for i in range(_num_of_nodes):
+                    _emb = []
+                    for _ in range(dimInBytes):
+                        _emb.extend(_int2boolean(int.from_bytes(f.read(1), byteorder='little')))
+                    node2embedding[str(i)] = _emb
+
+        else:
+            raise ValueError("Invalid embedding file format!")
 
         return node2embedding
 
@@ -32,7 +59,8 @@ class Evaluation:
 
         node2community = nx.get_node_attributes(nxg, name='community')
 
-        for node in nxg.nodes():
+        # --> for node in nxg.nodes():
+        for node in node2community.keys():
 
             comm = node2community[node]
             if type(comm) == int:
@@ -45,7 +73,8 @@ class Evaluation:
         # It is assumed that the labels of communities starts from 0 to K-1
         max_community_label = -1
         communities = nx.get_node_attributes(nxg, "community")
-        for node in nxg.nodes():
+        # --> for node in nxg.nodes():
+        for node in communities.keys():
             comm_list = communities[node]
             if type(comm_list) is int:
                 comm_list = [comm_list]

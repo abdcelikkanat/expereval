@@ -20,7 +20,7 @@ class NodeClassification(Evaluation):
 
     _score_types = ['micro', 'macro']
 
-    def __init__(self, embedding_file, graph_path, params={}, classification_method=None):
+    def __init__(self, embedding_file, graph_path, params={}, classification_method=None, filetype="txt"):
         Evaluation.__init__(self)
 
         self._embedding_file = embedding_file
@@ -31,15 +31,19 @@ class NodeClassification(Evaluation):
 
         self.classification_method = classification_method
 
+        self.filetype=filetype
+
     def evaluate(self, number_of_shuffles, training_ratios):
         g = self._get_networkx_graph(self._graph_path, directed=self._directed, params={})
-        node2embedding = self.read_embedding_file(embedding_file_path=self._embedding_file)
+        node2embedding = self.read_embedding_file(embedding_file_path=self._embedding_file, filetype=self.filetype)
         node2community = self.get_node2community(g)
 
-        N = g.number_of_nodes()
+        # --> N = g.number_of_nodes()
+        N = len(node2community)
         K = self.detect_number_of_communities(g)
 
-        nodelist = [node for node in g.nodes()]
+        # --> nodelist = [node for node in g.nodes()]
+        nodelist = node2community.keys()
         x = np.asarray([node2embedding[node] for node in nodelist])
         label_matrix = [[1 if k in node2community[node] else 0 for k in range(K)] for node in nodelist]
         label_matrix = csr_matrix(label_matrix)
