@@ -82,7 +82,7 @@ class NodeClassification(Evaluation):
                     if self.classification_method[3:10] == "hamming":
                         print("Metric: knn-hamming")
                         n_neighbors = int(self.classification_method[10:])
-                        ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors), metric="hamming")
+                        ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors, metric="hamming"))
                     else:
                         n_neighbors = int(self.classification_method[3:])
                         ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors))
