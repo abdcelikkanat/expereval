@@ -79,8 +79,13 @@ class NodeClassification(Evaluation):
 
                 elif self.classification_method[:3] == "kNN" or "knn":
 
-                    n_neighbors = int(self.classification_method[3:])
-                    ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors))
+                    if self.classification_method[3:10] == "hamming":
+                        print("Metric: knn-hamming")
+                        n_neighbors = int(self.classification_method[10:])
+                        ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors), metric="hamming")
+                    else:
+                        n_neighbors = int(self.classification_method[3:])
+                        ovr = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=n_neighbors))
 
                 elif self.classification_method == "svm-rbf":
                     ovr = OneVsRestClassifier(SVC(kernel="rbf", cache_size=4096, probability=True))
