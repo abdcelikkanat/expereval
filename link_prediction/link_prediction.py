@@ -8,6 +8,8 @@ from sklearn import metrics, model_selection, pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 from sklearn import preprocessing
+import scipy.io as sio
+from scipy.sparse import csr_matrix
 import pickle
 
 from graphbase.graphbase import *
@@ -122,8 +124,17 @@ class LinkPrediction(GraphBase):
             os.mkdir(target_folder)
 
         # Save the residual network
-        residual_g_save_path = os.path.join(target_folder, self.get_graph_name() + "_residual.edgelist")
+        residual_g_save_path = os.path.join(target_folder, self.get_graph_name() + "_residual_noweight.edgelist")
         nx.write_edgelist(residual_g, residual_g_save_path, data=False)
+
+        nx.set_edge_attributes(residual_g, {edge: {"temp_weight": 1.0} for edge in residual_g.edges()})
+        residual_g_save_path = os.path.join(target_folder, self.get_graph_name() + "_residual.edgelist")
+        nx.write_edgelist(residual_g, residual_g_save_path, data=["temp_weight"])
+
+        residual_g_mat_file_path = os.path.join(target_folder, self.get_graph_name() + "_residual.mat")
+        M = nx.adjacency_matrix(residual_g, nodelist=[str(node) for node in range(residual_g.number_of_nodes())]) * 1.0
+        temp_dict = {'network': M}
+        sio.savemat(file_name=residual_g_mat_file_path, mdict=temp_dict, do_compression=False)
 
         # Save positive and negative samples for training and test sets
         save_file_path = os.path.join(target_folder, self.get_graph_name() + "_samples.pkl")
